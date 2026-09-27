@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Temu | Periodic Table</title>
+  <style>
+    :root {
+      --bg: #080b18;
+      --panel: rgba(17, 22, 43, .84);
+      --text: #f3f6ff;
+      --muted: #9da7c5;
+      --line: rgba(255,255,255,.1);
+      --accent: #76e4ff;
+      --alkali: #ff7b9c;
+      --alkaline: #ffbd70;
+      --transition: #9d9bff;
+      --post: #64d8c5;
+      --metalloid: #b8e56f;
+      --nonmetal: #70d6ff;
+      --halogen: #ca9aff;
+      --noble: #ff9eea;
+      --lanthanide: #ffc76b;
+      --actinide: #ff8f72;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-width: 0;
+      min-height: 100vh;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 76% 12%, rgba(101, 81, 255, .2), transparent 27rem),
+        radial-gradient(circle at 8% 90%, rgba(0, 196, 255, .1), transparent 25rem),
+        var(--bg);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .app { max-width: 1600px; margin: auto; padding: 34px 40px 44px; }
+    header { display: flex; align-items: end; justify-content: space-between; gap: 30px; margin-bottom: 26px; }
+    .eyebrow { color: var(--accent); text-transform: uppercase; letter-spacing: .24em; font-size: .68rem; font-weight: 700; }
+    h1 { margin: 8px 0 0; font-size: clamp(2rem, 4vw, 4rem); letter-spacing: -.06em; line-height: .95; }
+    .intro { max-width: 390px; margin: 0; color: var(--muted); font-size: .9rem; line-height: 1.6; }
+
+    .workspace { display: grid; grid-template-columns: minmax(760px, 1fr) 330px; gap: 24px; align-items: start; }
+    .table-shell, .details { border: 1px solid var(--line); background: linear-gradient(145deg, rgba(26, 32, 61, .85), rgba(11, 15, 31, .82)); box-shadow: 0 24px 70px rgba(0,0,0,.25); border-radius: 22px; }
+    .table-shell { padding: 22px; overflow: auto; }
+    .table-top { display: flex; align-items: center; justify-content: space-between; gap: 15px; margin-bottom: 18px; }
+    .table-top h2 { font-size: .85rem; letter-spacing: .1em; text-transform: uppercase; margin: 0; color: #cdd5ef; }
+    .count { color: var(--muted); font-size: .76rem; }
+
+    .periodic-table { display: grid; grid-template-columns: repeat(18, minmax(38px, 1fr)); grid-template-rows: repeat(10, 67px); gap: 6px; min-width: 900px; }
+    .element {
+      appearance: none; position: relative; border: 1px solid color-mix(in srgb, var(--category) 70%, white 5%); border-radius: 9px;
+      background: color-mix(in srgb, var(--category) 17%, #11172e); color: var(--text); cursor: pointer; text-align: left;
+      padding: 7px; transition: transform .18s ease, box-shadow .18s ease, background .18s ease; overflow: hidden;
+    }
+    .element:hover, .element:focus-visible { z-index: 2; transform: translateY(-4px) scale(1.06); background: color-mix(in srgb, var(--category) 32%, #151b36); box-shadow: 0 0 0 2px var(--category), 0 12px 24px rgba(0,0,0,.4); outline: none; }
+    .element.selected { z-index: 3; box-shadow: 0 0 0 2px white, 0 0 22px color-mix(in srgb, var(--category) 65%, transparent); }
+    .number { display: block; color: color-mix(in srgb, var(--category) 72%, white); font-size: .57rem; font-weight: 700; }
+    .symbol { display: block; margin-top: 4px; font-size: 1.35rem; font-weight: 800; letter-spacing: -.05em; }
+    .name { display: block; margin-top: 1px; color: #c2c9df; font-size: .53rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .placeholder { grid-column: span 1; pointer-events: none; border-radius: 9px; background: rgba(255,255,255,.018); border: 1px dashed rgba(255,255,255,.06); }
+    .series-label { grid-column: 1 / span 3; align-self: center; color: var(--muted); font-size: .65rem; text-transform: uppercase; letter-spacing: .13em; padding-left: 5px; }
+
+    .details { position: sticky; top: 20px; padding: 25px; min-height: 470px; }
+    .details-top { display: flex; align-items: center; justify-content: space-between; color: var(--muted); font-size: .7rem; text-transform: uppercase; letter-spacing: .14em; }
+    .category-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--selected-color); box-shadow: 0 0 12px var(--selected-color); }
+    .big-symbol { display: block; margin-top: 30px; font-size: 6rem; letter-spacing: -.1em; line-height: .8; color: var(--selected-color); text-shadow: 0 0 30px color-mix(in srgb, var(--selected-color) 40%, transparent); }
+    .details h2 { margin: 22px 0 2px; font-size: 2rem; letter-spacing: -.05em; }
+    .detail-subtitle { color: var(--muted); margin: 0 0 23px; }
+    .fact-grid { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid var(--line); }
+    .fact { padding: 14px 10px 11px 0; border-bottom: 1px solid var(--line); }
+    .fact:nth-child(even) { padding-left: 10px; border-left: 1px solid var(--line); }
+    .fact-label { display: block; color: var(--muted); font-size: .63rem; text-transform: uppercase; letter-spacing: .1em; }
+    .fact-value { display: block; margin-top: 5px; font-size: .83rem; font-weight: 600; }
+    .fact-wide { grid-column: 1 / -1; padding-right: 0; }
+    .tip { margin-top: 22px; color: var(--muted); font-size: .73rem; line-height: 1.5; }
+    .important-note { margin-top: 14px; padding: 12px 13px; border: 1px solid color-mix(in srgb, var(--selected-color) 45%, var(--line)); border-left: 3px solid var(--selected-color); border-radius: 9px; background: color-mix(in srgb, var(--selected-color) 9%, transparent); color: #dfe5fa; font-size: .73rem; line-height: 1.5; }
+    .important-note strong { display: block; margin-bottom: 3px; color: var(--selected-color); font-size: .64rem; text-transform: uppercase; letter-spacing: .1em; }
+
+    .legend { display: flex; flex-wrap: wrap; gap: 9px 15px; margin-top: 18px; color: var(--muted); font-size: .67rem; }
+    .legend span { display: inline-flex; align-items: center; gap: 6px; }
+    .legend i { width: 8px; height: 8px; border-radius: 50%; background: var(--c); box-shadow: 0 0 8px var(--c); }
+    @media (max-width: 1180px) {
+      .workspace { grid-template-columns: 1fr; }
+      .details { position: relative; top: auto; min-height: 0; }
+      .big-symbol { margin-top: 18px; }
+      .fact-grid { max-width: 700px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header>
+      <div><div class="eyebrow">Temu / Chemistry</div><h1>Temu<br>periodic table</h1></div>
+      <p class="intro">Explore the building blocks of the universe. Select any element to reveal its identity, properties, and place in the periodic table.</p>
+    </header>
+    <section class="workspace">
+      <div class="table-shell">
+        <div class="table-top"><h2>118 known elements</h2><span class="count">Click a tile to inspect</span></div>
+        <div id="periodicTable" class="periodic-table" aria-label="Interactive periodic table"></div>
+        <div id="legend" class="legend"></div>
+      </div>
+      <aside id="details" class="details" aria-live="polite"></aside>
+    </section>
+  </main>
+  <script>
+    const categories = {
+      alkali: ["Alkali metal", "var(--alkali)"], alkaline: ["Alkaline earth metal", "var(--alkaline)"],
+      transition: ["Transition metal", "var(--transition)"], post: ["Post-transition metal", "var(--post)"],
+      metalloid: ["Metalloid", "var(--metalloid)"], nonmetal: ["Reactive nonmetal", "var(--nonmetal)"],
+      halogen: ["Halogen", "var(--halogen)"], noble: ["Noble gas", "var(--noble)"],
+      lanthanide: ["Lanthanide", "var(--lanthanide)"], actinide: ["Actinide", "var(--actinide)"]
+    };
+    const raw = [
+      ["H","Hydrogen","nonmetal","1.008","Gas","1","1"],["He","Helium","noble","4.003","Gas","18","1"],
+      ["Li","Lithium","alkali","6.941","Solid","1","2"],["Be","Beryllium","alkaline","9.012","Solid","2","2"],["B","Boron","metalloid","10.81","Solid","13","2"],["C","Carbon","nonmetal","12.011","Solid","14","2"],["N","Nitrogen","nonmetal","14.007","Gas","15","2"],["O","Oxygen","nonmetal","15.999","Gas","16","2"],["F","Fluorine","halogen","18.998","Gas","17","2"],["Ne","Neon","noble","20.180","Gas","18","2"],
+      ["Na","Sodium","alkali","22.990","Solid","1","3"],["Mg","Magnesium","alkaline","24.305","Solid","2","3"],["Al","Aluminium","post","26.982","Solid","13","3"],["Si","Silicon","metalloid","28.086","Solid","14","3"],["P","Phosphorus","nonmetal","30.974","Solid","15","3"],["S","Sulfur","nonmetal","32.06","Solid","16","3"],["Cl","Chlorine","halogen","35.45","Gas","17","3"],["Ar","Argon","noble","39.948","Gas","18","3"],
+      ["K","Potassium","alkali","39.098","Solid","1","4"],["Ca","Calcium","alkaline","40.078","Solid","2","4"],["Sc","Scandium","transition","44.956","Solid","3","4"],["Ti","Titanium","transition","47.867","Solid","4","4"],["V","Vanadium","transition","50.942","Solid","5","4"],["Cr","Chromium","transition","51.996","Solid","6","4"],["Mn","Manganese","transition","54.938","Solid","7","4"],["Fe","Iron","transition","55.845","Solid","8","4"],["Co","Cobalt","transition","58.933","Solid","9","4"],["Ni","Nickel","transition","58.693","Solid","10","4"],["Cu","Copper","transition","63.546","Solid","11","4"],["Zn","Zinc","transition","65.38","Solid","12","4"],["Ga","Gallium","post","69.723","Solid","13","4"],["Ge","Germanium","metalloid","72.630","Solid","14","4"],["As","Arsenic","metalloid","74.922","Solid","15","4"],["Se","Selenium","nonmetal","78.971","Solid","16","4"],["Br","Bromine","halogen","79.904","Liquid","17","4"],["Kr","Krypton","noble","83.798","Gas","18","4"],
+      ["Rb","Rubidium","alkali","85.468","Solid","1","5"],["Sr","Strontium","alkaline","87.62","Solid","2","5"],["Y","Yttrium","transition","88.906","Solid","3","5"],["Zr","Zirconium","transition","91.224","Solid","4","5"],["Nb","Niobium","transition","92.906","Solid","5","5"],["Mo","Molybdenum","transition","95.95","Solid","6","5"],["Tc","Technetium","transition","98","Solid","7","5"],["Ru","Ruthenium","transition","101.07","Solid","8","5"],["Rh","Rhodium","transition","102.91","Solid","9","5"],["Pd","Palladium","transition","106.42","Solid","10","5"],["Ag","Silver","transition","107.87","Solid","11","5"],["Cd","Cadmium","transition","112.41","Solid","12","5"],["In","Indium","post","114.82","Solid","13","5"],["Sn","Tin","post","118.71","Solid","14","5"],["Sb","Antimony","metalloid","121.76","Solid","15","5"],["Te","Tellurium","metalloid","127.60","Solid","16","5"],["I","Iodine","halogen","126.90","Solid","17","5"],["Xe","Xenon","noble","131.29","Gas","18","5"],
+      ["Cs","Cesium","alkali","132.91","Solid","1","6"],["Ba","Barium","alkaline","137.33","Solid","2","6"],["La","Lanthanum","lanthanide","138.91","Solid","3","6"],["Hf","Hafnium","transition","178.49","Solid","4","6"],["Ta","Tantalum","transition","180.95","Solid","5","6"],["W","Tungsten","transition","183.84","Solid","6","6"],["Re","Rhenium","transition","186.21","Solid","7","6"],["Os","Osmium","transition","190.23","Solid","8","6"],["Ir","Iridium","transition","192.22","Solid","9","6"],["Pt","Platinum","transition","195.08","Solid","10","6"],["Au","Gold","transition","196.97","Solid","11","6"],["Hg","Mercury","transition","200.59","Liquid","12","6"],["Tl","Thallium","post","204.38","Solid","13","6"],["Pb","Lead","post","207.2","Solid","14","6"],["Bi","Bismuth","post","208.98","Solid","15","6"],["Po","Polonium","post","209","Solid","16","6"],["At","Astatine","halogen","210","Solid","17","6"],["Rn","Radon","noble","222","Gas","18","6"],
+      ["Fr","Francium","alkali","223","Solid","1","7"],["Ra","Radium","alkaline","226","Solid","2","7"],["Ac","Actinium","actinide","227","Solid","3","7"],["Rf","Rutherfordium","transition","267","Solid","4","7"],["Db","Dubnium","transition","268","Solid","5","7"],["Sg","Seaborgium","transition","269","Solid","6","7"],["Bh","Bohrium","transition","270","Solid","7","7"],["Hs","Hassium","transition","277","Solid","8","7"],["Mt","Meitnerium","transition","278","Solid","9","7"],["Ds","Darmstadtium","transition","281","Solid","10","7"],["Rg","Roentgenium","transition","282","Solid","11","7"],["Cn","Copernicium","transition","285","Solid","12","7"],["Nh","Nihonium","post","286","Solid","13","7"],["Fl","Flerovium","post","289","Solid","14","7"],["Mc","Moscovium","post","290","Solid","15","7"],["Lv","Livermorium","post","291","Solid","16","7"],["Ts","Tennessine","halogen","294","Solid","17","7"],["Og","Oganesson","noble","294","Gas","18","7"],
+      ["Ce","Cerium","lanthanide","140.12","Solid","4","8"],["Pr","Praseodymium","lanthanide","140.91","Solid","5","8"],["Nd","Neodymium","lanthanide","144.24","Solid","6","8"],["Pm","Promethium","lanthanide","145","Solid","7","8"],["Sm","Samarium","lanthanide","150.36","Solid","8","8"],["Eu","Europium","lanthanide","151.96","Solid","9","8"],["Gd","Gadolinium","lanthanide","157.25","Solid","10","8"],["Tb","Terbium","lanthanide","158.93","Solid","11","8"],["Dy","Dysprosium","lanthanide","162.50","Solid","12","8"],["Ho","Holmium","lanthanide","164.93","Solid","13","8"],["Er","Erbium","lanthanide","167.26","Solid","14","8"],["Tm","Thulium","lanthanide","168.93","Solid","15","8"],["Yb","Ytterbium","lanthanide","173.05","Solid","16","8"],["Lu","Lutetium","lanthanide","174.97","Solid","17","8"],
+      ["Th","Thorium","actinide","232.04","Solid","4","9"],["Pa","Protactinium","actinide","231.04","Solid","5","9"],["U","Uranium","actinide","238.03","Solid","6","9"],["Np","Neptunium","actinide","237","Solid","7","9"],["Pu","Plutonium","actinide","244","Solid","8","9"],["Am","Americium","actinide","243","Solid","9","9"],["Cm","Curium","actinide","247","Solid","10","9"],["Bk","Berkelium","actinide","247","Solid","11","9"],["Cf","Californium","actinide","251","Solid","12","9"],["Es","Einsteinium","actinide","252","Solid","13","9"],["Fm","Fermium","actinide","257","Solid","14","9"],["Md","Mendelevium","actinide","258","Solid","15","9"],["No","Nobelium","actinide","259","Solid","16","9"],["Lr","Lawrencium","actinide","266","Solid","17","9"]
+    ];
+    const elements = raw.map((e, i) => ({ number: i + 1, symbol: e[0], name: e[1], category: e[2], mass: e[3], state: e[4], group: +e[5], period: +e[6] }));
+    const table = document.querySelector("#periodicTable");
+    const detail = document.querySelector("#details");
+    const legend = document.querySelector("#legend");
+
+    function renderDetails(element) {
+      const [category, color] = categories[element.category];
+      const block = element.group <= 2 ? "s-block" : element.group >= 13 ? "p-block" : "d-block";
+      const family = category;
+      detail.style.setProperty("--selected-color", color);
+      detail.innerHTML = `<div class="details-top"><span>Element ${String(element.number).padStart(3, "0")}</span><i class="category-dot"></i></div>
+        <span class="big-symbol">${element.symbol}</span><h2>${element.name}</h2><p class="detail-subtitle">${category}</p>
+        <div class="fact-grid"><div class="fact"><span class="fact-label">Atomic number</span><span class="fact-value">${element.number}</span></div>
+        <div class="fact"><span class="fact-label">Atomic mass</span><span class="fact-value">${element.mass} u</span></div>
+        <div class="fact"><span class="fact-label">State at 20°C</span><span class="fact-value">${element.state}</span></div>
+        <div class="fact"><span class="fact-label">Electrons</span><span class="fact-value">${element.number}</span></div>
+        <div class="fact"><span class="fact-label">Periodic group</span><span class="fact-value">${element.group}</span></div>
+        <div class="fact"><span class="fact-label">Period</span><span class="fact-value">${element.period}</span></div>
+        <div class="fact"><span class="fact-label">Orbital block</span><span class="fact-value">${block}</span></div>
+        <div class="fact"><span class="fact-label">Valence electrons</span><span class="fact-value">${getValenceElectrons(element)}</span></div>
+        <div class="fact"><span class="fact-label">Electron configuration</span><span class="fact-value">${getElectronConfiguration(element)}</span></div>
+        <div class="fact"><span class="fact-label">Typical oxidation</span><span class="fact-value">${getOxidationStates(element)}</span></div>
+        <div class="fact fact-wide"><span class="fact-label">Element family</span><span class="fact-value">${family}</span></div></div>
+        <p class="tip"><strong>About ${element.name}</strong><br>${getElementNote(element)}</p>
+        <p class="tip"><strong>Chemical profile</strong><br>${getChemicalProfile(element)}</p>
+        <p class="tip"><strong>Why it matters</strong><br>${getImportance(element)}</p>
+        <p class="tip">${element.name} has ${element.number} electrons in its neutral atom and occupies period ${element.period} of the periodic table. Click another tile to continue exploring.</p>
+        <p class="important-note"><strong>Important note</strong>Element properties can vary with temperature, pressure, chemical form, and isotope. Handle all samples according to appropriate laboratory safety guidance.</p>
+        <p class="important-note"><strong>Safety reminder</strong>Never taste, touch, or handle an element based solely on this table. Some elements are toxic, corrosive, flammable, or radioactive; use proper equipment and expert supervision.</p>
+        <p class="important-note"><strong>Radioactivity note</strong>For radioactive elements, the displayed mass may represent a commonly cited or longest-lived isotope rather than a stable natural isotope. Always consult current authoritative data before use.</p>`;
+    }
+
+    function getElementNote(element) {
+      const notes = {
+        H: "The lightest element and the most abundant element in the universe.",
+        He: "A very light, inert gas used in cryogenics, balloons, and leak detection.",
+        C: "A versatile nonmetal that forms the backbone of organic chemistry.",
+        O: "A reactive gas essential for respiration and combustion.",
+        Fe: "A strong transition metal central to steel production and biology.",
+        Au: "A dense, corrosion-resistant metal valued for its conductivity and appearance.",
+        U: "A heavy radioactive metal used as nuclear fuel and in scientific research."
+      };
+      return notes[element.symbol] || `${element.name} is classified as a ${categories[element.category][0].toLowerCase()} and has an atomic number of ${element.number}.`;
+    }
+
+    function getValenceElectrons(element) {
+      if (element.category === "transition" || element.category === "lanthanide" || element.category === "actinide") return "Variable";
+      if (element.group === 1) return 1;
+      if (element.group === 2) return 2;
+      if (element.group >= 13) return element.group - 10;
+      return "Variable";
+    }
+
+    function getElectronConfiguration(element) {
+      const configurations = {
+        H: "1s¹", He: "1s²", C: "[He] 2s² 2p²", N: "[He] 2s² 2p³", O: "[He] 2s² 2p⁴",
+        Na: "[Ne] 3s¹", Cl: "[Ne] 3s² 3p⁵", Fe: "[Ar] 3d⁶ 4s²", Cu: "[Ar] 3d¹⁰ 4s¹",
+        Ag: "[Kr] 4d¹⁰ 5s¹", Au: "[Xe] 4f¹⁴ 5d¹⁰ 6s¹", U: "[Rn] 5f³ 6d¹ 7s²"
+      };
+      return configurations[element.symbol] || `Outer shell: ${getValenceElectrons(element)} electron${getValenceElectrons(element) === 1 ? "" : "s"}`;
+    }
+
+    function getOxidationStates(element) {
+      const states = {
+        alkali: "+1", alkaline: "+2", halogen: "−1, +1, +3, +5, +7", noble: "0",
+        metalloid: "Variable", nonmetal: "Variable", post: "Variable", transition: "Variable",
+        lanthanide: "+3 (most common)", actinide: "Variable"
+      };
+      return states[element.category];
+    }
+
+    function getImportance(element) {
+      const importance = {
+        H: "Essential to stars, water, and many industrial chemical processes.",
+        C: "The structural basis of living organisms and a major component of fuels and materials.",
+        O: "Supports aerobic life and is widely used in medicine, welding, and water treatment.",
+        Fe: "Important for construction, manufacturing, and oxygen transport in biology.",
+        Si: "A key semiconductor used in computers, solar cells, glass, and ceramics.",
+        U: "Used in nuclear energy research and requires strict radiological controls."
+      };
+      return importance[element.symbol] || `Important in research, industry, technology, or natural chemical cycles as a ${categories[element.category][0].toLowerCase()}.`;
+    }
+
+    function getChemicalProfile(element) {
+      const profiles = {
+        alkali: "Highly reactive metals that commonly form +1 ions and react readily with water.",
+        alkaline: "Reactive metals that commonly form +2 ions and occur naturally in minerals.",
+        transition: "Metals with variable oxidation states and often colorful compounds or complexes.",
+        post: "Metallic elements with relatively low melting points and varied industrial uses.",
+        metalloid: "Elements with properties between metals and nonmetals; many are useful semiconductors.",
+        nonmetal: "Generally poor electrical conductors that form covalent compounds and are important in biology.",
+        halogen: "Highly reactive nonmetals that commonly form -1 ions and salts with metals.",
+        noble: "Very unreactive gases with filled outer electron shells.",
+        lanthanide: "Silvery rare-earth metals with useful magnetic, optical, and catalytic properties.",
+        actinide: "Heavy metals whose atoms are radioactive; many have important nuclear applications."
+      };
+      return profiles[element.category];
+    }
+
+    function renderTable() {
+      const occupied = new Set(elements.map(element => `${element.period}-${element.group}`));
+      elements.forEach(element => {
+        const tile = document.createElement("button");
+        tile.type = "button";
+        tile.className = "element";
+        tile.style.setProperty("--category", categories[element.category][1]);
+        tile.style.gridColumn = element.group;
+        tile.style.gridRow = element.period;
+        tile.setAttribute("aria-label", `${element.name}, atomic number ${element.number}`);
+        tile.innerHTML = `<span class="number">${element.number}</span><span class="symbol">${element.symbol}</span><span class="name">${element.name}</span>`;
+        tile.addEventListener("click", () => {
+          document.querySelectorAll(".element.selected").forEach(selected => selected.classList.remove("selected"));
+          tile.classList.add("selected");
+          renderDetails(element);
+        });
+        table.appendChild(tile);
+      });
+
+      Object.entries(categories).forEach(([key, [label, color]]) => {
+        const item = document.createElement("span");
+        item.innerHTML = `<i style="--c:${color}"></i>${label}`;
+        legend.appendChild(item);
+      });
+    }
+
+    renderTable();
+    renderDetails(elements[0]);
+    table.querySelector(".element").classList.add("selected");
+  </script>
+</body>
+</html>
